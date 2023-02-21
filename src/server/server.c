@@ -27,7 +27,7 @@
 #include <openssl/x509_vfy.h>
 
 #include "socks5.h"
-#include "ngx_http_socks5_module.h"
+#include "server.h"
 #include "serverkey.h"
 
 #define HTTP_REQUEST_HEADER_SOCKS5_KEY "socks5"
