@@ -69,9 +69,6 @@ pub fn build(b: *std.Build) void {
     //);
     //server.addConfigHeader(headers_h);
     //server.installConfigHeader(headers_h, .{});
-    server.linkSystemLibrary("ssl");
-    server.linkSystemLibrary("crypto");
-    server.linkSystemLibrary("pthread");
     server.linkLibC();
     server.install();
 }
