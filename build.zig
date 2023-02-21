@@ -49,6 +49,26 @@ pub fn build(b: *std.Build) void {
             "-Werror",
         },
     );
+    //const headers_h = b.addConfigHeader(
+    //    .{
+    //        .style = .autoconf,
+    //        .include_path = "src/server/ngx_auto_headers.h",
+    //    },
+    //    .{
+    //        .NGX_HAVE_UNISTD_H = 1,
+    //        .NGX_HAVE_INTTYPES_H = 1,
+    //        .NGX_HAVE_LIMITS_H = 1,
+    //        .NGX_HAVE_SYS_PARAM_H = 1,
+    //        .NGX_HAVE_SYS_MOUNT_H = 1,
+    //        .NGX_HAVE_SYS_STATVFS_H = 1,
+    //        .NGX_HAVE_CRYPT_H = 1,
+    //        .NGX_LINUX = 1,
+    //        .NGX_HAVE_SYS_PRCTL_H = 1,
+    //        .NGX_HAVE_SYS_VFS_H = 1,
+    //    },
+    //);
+    //server.addConfigHeader(headers_h);
+    //server.installConfigHeader(headers_h, .{});
     server.linkSystemLibrary("ssl");
     server.linkSystemLibrary("crypto");
     server.linkSystemLibrary("pthread");
