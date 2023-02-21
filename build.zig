@@ -1,87 +1,57 @@
 const std = @import("std");
 
-const ExeTarget = enum {
-    all,
-    client,
-    server,
-};
-
-const Executable = struct {
-    name: []const u8,
-    src: []const []const u8,
-    include: []const u8,
-};
-
 pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
 
-    const exe_target = b.option(
-        ExeTarget,
-        "ExeTarget",
-        "executable to build, default all",
-    ) orelse .all;
-
     const optimize = b.standardOptimizeOption(.{});
 
-    var exes: []const Executable = undefined;
-    switch (exe_target) {
-        .client => {
-            exes = &[_]Executable{
-                .{
-                    .name = "client",
-                    .src = &[_][]const u8{
-                        "src/client/client.c",
-                    },
-                    .include = "src/client",
-                },
-            };
+    const client = b.addExecutable(.{
+        .name = "client",
+        .target = target,
+        .optimize = optimize,
+    });
+    client.addIncludePath("src/client");
+    client.addCSourceFiles(
+        &[_][]const u8{
+            "src/client/client.c",
         },
-        .server => {
-            exes = &[_]Executable{
-                .{
-                    .name = "server",
-                    .src = &[_][]const u8{
-                        "src/server/server.c",
-                    },
-                    .include = "src/server",
-                },
-            };
-        },
-        .all => {
-            exes = &[_]Executable{
-                .{
-                    .name = "client",
-                    .src = &[_][]const u8{
-                        "src/client/client.c",
-                    },
-                    .include = "src/client",
-                },
-                .{
-                    .name = "server",
-                    .src = &[_][]const u8{
-                        "src/server/server.c",
-                    },
-                    .include = "src/server",
-                },
-            };
-        },
-    }
+        &[_][]const u8{"-Wall"},
+    );
+    client.linkSystemLibrary("ssl");
+    client.linkSystemLibrary("crypto");
+    client.linkSystemLibrary("pthread");
+    client.linkLibC();
+    client.install();
 
-    for (exes) |exe_obj| {
-        const exe = b.addExecutable(.{
-            .name = exe_obj.name,
-            .target = target,
-            .optimize = optimize,
-        });
-        exe.addIncludePath(exe_obj.include);
-        exe.addCSourceFiles(
-            exe_obj.src,
-            &[_][]const u8{"-Wall"},
-        );
-        exe.linkSystemLibrary("ssl");
-        exe.linkSystemLibrary("crypto");
-        exe.linkSystemLibrary("pthread");
-        exe.linkLibC();
-        exe.install();
-    }
+    const server = b.addSharedLibrary(.{
+        .name = "ngx_http_socks5_module",
+        .target = target,
+        .optimize = optimize,
+    });
+
+    server.addIncludePath("src/server");
+    server.addIncludePath("src/server/core");
+    server.addIncludePath("src/server/event");
+    server.addIncludePath("src/server/event/modules");
+    server.addIncludePath("src/server/os/unix");
+    server.addIncludePath("src/server/http");
+    server.addIncludePath("src/server/http/modules");
+    server.addCSourceFiles(
+        &[_][]const u8{
+            "src/server/server.c",
+            "src/server/module.c",
+        },
+        &[_][]const u8{
+            "-W",
+            "-Wall",
+            "-Wpointer-arith",
+            "-Wno-unused-parameter",
+            "-Werror",
+        },
+    );
+    server.linkSystemLibrary("ssl");
+    server.linkSystemLibrary("crypto");
+    server.linkSystemLibrary("pthread");
+    server.linkLibC();
+    server.install();
 }
